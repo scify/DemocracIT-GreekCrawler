@@ -37,7 +37,7 @@ public class DB {
     static SimpleDateFormat formatter = new SimpleDateFormat("dd MM yyyy, HH:mm", locale);
 
     /**
-     *Initiates the database connection.
+     * Initiates the database connection.
      *
      * @throws java.sql.SQLException
      * @throws java.io.FileNotFoundException
@@ -76,7 +76,7 @@ public class DB {
                     }
                 } catch (FileNotFoundException e) {
                 }
-                String DB_url = "jdbc:postgresql://"+ip_address;
+                String DB_url = "jdbc:postgresql://" + ip_address;
                 connection = DriverManager.getConnection(DB_url, user, pass);
             } catch (SQLException e) {
                 System.out.println("Connection Failed! Check output console.");
@@ -94,11 +94,11 @@ public class DB {
     }
 
     /**
-     *Returns the db_status of a consultation from the db.
+     * Returns the db_status of a consultation from the db.
      *
      * @param curl - The consultation's url
      * @return - The consultation's db status
-     * @throws java.sql.SQLException 
+     * @throws java.sql.SQLException
      */
     public static String GetConsultationStatus(String curl) throws SQLException {
         Statement stmt = connection.createStatement();
@@ -117,11 +117,12 @@ public class DB {
     }
 
     /**
-     *Returns the ID of a given consultation if already on the DB else returns -1.
+     * Returns the ID of a given consultation if already on the DB else returns
+     * -1.
      *
      * @param curl - The consultation's url
      * @return - The consultation's db id
-     * @throws java.sql.SQLException 
+     * @throws java.sql.SQLException
      */
     public static int GetConsultationId(String curl) throws SQLException {
         Statement stmt = connection.createStatement();
@@ -134,11 +135,11 @@ public class DB {
     }
 
     /**
-     *Inserts organizations into DB.
+     * Inserts organizations into DB.
      *
      * @param ministry - The ministry object
      * @param url - The url of the ministry
-     * @throws java.sql.SQLException 
+     * @throws java.sql.SQLException
      */
     public static void InsertOrganization(Object ministry, String url) throws SQLException {
         Statement stmt = connection.createStatement();
@@ -152,11 +153,11 @@ public class DB {
     }
 
     /**
-     *Updates the urls of the organizations into DB.
+     * Updates the urls of the organizations into DB.
      *
      * @param x - The ministry object
      * @param url - The collapsed url of the ministry
-     * @throws java.sql.SQLException 
+     * @throws java.sql.SQLException
      */
     static void UpdateOrganizationUrls(Object x, String url) throws SQLException {
         String updateOrganizationUrlSql = "UPDATE ORGANIZATION_LKP SET "
@@ -169,13 +170,13 @@ public class DB {
         prepUpdUrlsSt.close();
     }
 
-    
     /**
-     *Returns the ID of a given Organization if already on the DB else Inserts the new Organization into DB.
+     * Returns the ID of a given Organization if already on the DB else Inserts
+     * the new Organization into DB.
      *
      * @param ministry - The name of the ministry
      * @return - The DB id of any given ministry
-     * @throws java.sql.SQLException 
+     * @throws java.sql.SQLException
      */
     public static int GetOrganizationId(Object ministry) throws SQLException {
         Statement stmt = connection.createStatement();
@@ -186,13 +187,13 @@ public class DB {
         }
         return id;
     }
-    
+
     /**
-     *Get a string date and replace the months into the appropriate format.
+     * Get a string date and replace the months into the appropriate format.
      *
      * @param date - A date into "Day Month Year" format.
      * @return - A new java.sql.Timestamp format of this date
-     * @throws java.text.ParseException 
+     * @throws java.text.ParseException
      */
     public static Timestamp ConvertDateMonth(String date) throws ParseException {
         String[] dateTokens = date.split(" ");
@@ -252,9 +253,9 @@ public class DB {
         String escapedText = StringEscapeUtils.unescapeHtml4(htmlText);//escapeHtml(htmlText);
         return escapedText;
     }
-    
+
     /**
-     *Insert consultations into DB.
+     * Insert consultations into DB.
      *
      * @param currentCons - The consultation to be inserted
      * @param orgId - the ministry id that the consultation belongs to
@@ -298,7 +299,7 @@ public class DB {
     }
 
     /**
-     *Update consultations into DB, adding report texts etc.
+     * Update consultations into DB, adding report texts etc.
      *
      * @param currentCons - The consultation to be updated.
      * @param consID - The consultation's id
@@ -346,7 +347,7 @@ public class DB {
     }
 
     /**
-     *Update the consultation status (from red2blue)
+     * Update the consultation status (from red2blue)
      *
      * @param currentCons - The consultation to be updated.
      * @param consID - The consultation's id
@@ -424,15 +425,17 @@ public class DB {
      * @throws java.sql.SQLException
      */
     public static void InsertComments(ArrayList<Comment> comments, int articleDbId) throws SQLException {
-        String insertCommentSql = "INSERT INTO comments (url_source, article_id, comment, date_added, revision, depth, initialid, source_type_id)"
-                + "VALUES (?,?,?,?,?,?,?,?)";
-        PreparedStatement prepInsertComStatement = connection.prepareStatement(insertCommentSql);
+        String insertCommentSql = "INSERT INTO comments (url_source, article_id, comment, date_added, revision, depth, source_type_id)"
+                + "VALUES (?,?,?,?,?,?,?)";
+        PreparedStatement prepInsertComStatement = connection.prepareStatement(insertCommentSql, Statement.RETURN_GENERATED_KEYS);
+        Statement stmnt = null;
         for (Comment currentComment : comments) {
-            String selectCommentSql = "SELECT * FROM comments WHERE url_source = ? AND article_id = ?";
+            String selectCommentSql = "SELECT comment FROM comments WHERE url_source = ? AND article_id = ?";
             PreparedStatement prepSelectComStatement = connection.prepareStatement(selectCommentSql);
             prepSelectComStatement.setString(1, currentComment.permalink);
             prepSelectComStatement.setInt(2, articleDbId);
             ResultSet rs = prepSelectComStatement.executeQuery();
+            int insertedCommentKeyId = -1;
             if (rs.next()) {
                 String comText = rs.getString("comment");
                 if (currentComment.contentHash != comText.hashCode()) {
@@ -452,11 +455,21 @@ public class DB {
                     prepInsertComStatement.setTimestamp(4, comTimestamp);
                     prepInsertComStatement.setInt(5, curCommentRevision);
                     prepInsertComStatement.setInt(6, currentComment.depth);
-                    prepInsertComStatement.setInt(7, currentComment.initialId);
-                    prepInsertComStatement.setInt(8, 2);
-                    prepInsertComStatement.addBatch();
+                    prepInsertComStatement.setInt(7, 2);
+                    prepInsertComStatement.executeUpdate();
+                    ResultSet rsq = prepInsertComStatement.getGeneratedKeys();
+                    if (rsq.next()) {
+                        insertedCommentKeyId = rsq.getInt(1);
+                    }
+                    prepInsertComStatement.close();
+//                    prepInsertComStatement.addBatch();
                     ConsultationThreadedCrawling.newComments++;
-
+                    String insertIntoCommentOpengov = "INSERT INTO comment_opengov"
+                            + "(opengovId, fullname, id) " + "VALUES"
+                            + "(" + currentComment.initialId + ",'" + currentComment.author + "'," + insertedCommentKeyId + ")";
+                    stmnt = connection.createStatement();
+                    stmnt.executeUpdate(insertIntoCommentOpengov);
+                    stmnt.close();
                 }
             } else {
                 Timestamp comTimestamp = null;
@@ -471,15 +484,26 @@ public class DB {
                 prepInsertComStatement.setTimestamp(4, comTimestamp);
                 prepInsertComStatement.setInt(5, 1);
                 prepInsertComStatement.setInt(6, currentComment.depth);
-                prepInsertComStatement.setInt(7, currentComment.initialId);
-                prepInsertComStatement.setInt(8, 2);
-                prepInsertComStatement.addBatch();
+                prepInsertComStatement.setInt(7, 2);
+                prepInsertComStatement.executeUpdate();
+                ResultSet rsq = prepInsertComStatement.getGeneratedKeys();
+                if (rsq.next()) {
+                    insertedCommentKeyId = rsq.getInt(1);
+                }
+                prepInsertComStatement.close();
+//                prepInsertComStatement.addBatch();
                 ConsultationThreadedCrawling.newComments++;
+                String insertIntoCommentOpengov = "INSERT INTO comment_opengov"
+                        + "(opengovId, fullname, id) " + "VALUES"
+                        + "(" + currentComment.initialId + ",'" + currentComment.author + "'," + insertedCommentKeyId + ")";
+                stmnt = connection.createStatement();
+                stmnt.executeUpdate(insertIntoCommentOpengov);
+                stmnt.close();
             }
             prepSelectComStatement.close();
         }
-        prepInsertComStatement.executeBatch();
-        prepInsertComStatement.close();
+//        prepInsertComStatement.executeBatch();
+//        prepInsertComStatement.close();
     }
 
     /**
