@@ -466,7 +466,7 @@ public class DB {
 //                    prepInsertComStatement.addBatch();
                     ConsultationThreadedCrawling.newComments++;
                     String insertIntoCommentOpengov = "INSERT INTO comment_opengov"
-                            + "(opengovId, fullname, id) " + "VALUES"
+                            + "(opengovid, fullname, id) " + "VALUES"
                             + "(" + currentComment.initialId + ",'" + currentComment.author + "'," + insertedCommentKeyId + ")";
                     stmnt = connection.createStatement();
                     stmnt.executeUpdate(insertIntoCommentOpengov);
@@ -495,7 +495,7 @@ public class DB {
 //                prepInsertComStatement.addBatch();
                 ConsultationThreadedCrawling.newComments++;
                 String insertIntoCommentOpengov = "INSERT INTO comment_opengov"
-                        + "(opengovId, fullname, id) " + "VALUES"
+                        + "(opengovid, fullname, id) " + "VALUES"
                         + "(" + currentComment.initialId + ",'" + currentComment.author + "'," + insertedCommentKeyId + ")";
                 stmnt = connection.createStatement();
                 stmnt.executeUpdate(insertIntoCommentOpengov);
