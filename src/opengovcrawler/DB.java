@@ -419,6 +419,7 @@ public class DB {
 
     /**
      * Insert comments into DB
+     * Also, it inserts username and initialId into comment_opengov table
      *
      * @param articleDbId - The id of the article that the comments refer to
      * @param comments - The arrayList of comment
