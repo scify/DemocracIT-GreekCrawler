@@ -418,8 +418,8 @@ public class DB {
     }
 
     /**
-     * Insert comments into DB
-     * Also, it inserts username and initialId into comment_opengov table
+     * Insert comments into DB Also, it inserts username and initialId into
+     * comment_opengov table
      *
      * @param articleDbId - The id of the article that the comments refer to
      * @param comments - The arrayList of comment
@@ -462,7 +462,6 @@ public class DB {
                     if (rsq.next()) {
                         insertedCommentKeyId = rsq.getInt(1);
                     }
-                    prepInsertComStatement.close();
 //                    prepInsertComStatement.addBatch();
                     ConsultationThreadedCrawling.newComments++;
                     String insertIntoCommentOpengov = "INSERT INTO comment_opengov"
@@ -491,7 +490,6 @@ public class DB {
                 if (rsq.next()) {
                     insertedCommentKeyId = rsq.getInt(1);
                 }
-                prepInsertComStatement.close();
 //                prepInsertComStatement.addBatch();
                 ConsultationThreadedCrawling.newComments++;
                 String insertIntoCommentOpengov = "INSERT INTO comment_opengov"
@@ -504,7 +502,7 @@ public class DB {
             prepSelectComStatement.close();
         }
 //        prepInsertComStatement.executeBatch();
-//        prepInsertComStatement.close();
+        prepInsertComStatement.close();
     }
 
     /**
