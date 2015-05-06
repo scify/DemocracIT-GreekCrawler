@@ -492,6 +492,7 @@ public class DB {
                 }
 //                prepInsertComStatement.addBatch();
                 ConsultationThreadedCrawling.newComments++;
+                // Keep track of the opengov users
                 String insertIntoCommentOpengov = "INSERT INTO comment_opengov"
                         + "(opengovid, fullname, id) " + "VALUES"
                         + "(" + currentComment.initialId + ",'" + currentComment.author + "'," + insertedCommentKeyId + ")";
