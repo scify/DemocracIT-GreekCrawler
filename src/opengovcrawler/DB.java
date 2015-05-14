@@ -431,7 +431,7 @@ public class DB {
         PreparedStatement prepInsertComStatement = connection.prepareStatement(insertCommentSql, Statement.RETURN_GENERATED_KEYS);
         Statement stmnt = null;
         for (Comment currentComment : comments) {
-            String selectCommentSql = "SELECT comment FROM comments WHERE url_source = ? AND article_id = ?";
+            String selectCommentSql = "SELECT * FROM comments WHERE url_source = ? AND article_id = ?";
             PreparedStatement prepSelectComStatement = connection.prepareStatement(selectCommentSql);
             prepSelectComStatement.setString(1, currentComment.permalink);
             prepSelectComStatement.setInt(2, articleDbId);
