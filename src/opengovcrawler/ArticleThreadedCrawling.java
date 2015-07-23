@@ -84,6 +84,7 @@ public class ArticleThreadedCrawling implements Runnable {
                     String[] userString = nextComment.select("div.user").select("div.author").text().split("\\|");
                     String commentTimestamp = userString[0];
                     String commentAuthor = userString[1];
+                    String commentAuthorUrlLink = nextComment.select("a").attr("href");//Elements alinks = row.select("a");
                     String commentPermalink = nextComment.select("div.user").select("div.meta-comment").select("a").attr("href");
                     String commentContent = nextComment.select("p").html();
                     int commentContentHash = commentContent.hashCode();
@@ -91,7 +92,7 @@ public class ArticleThreadedCrawling implements Runnable {
                     int commentDepth = Integer.parseInt(commentDepthClasses[commentDepthClasses.length - 1]);
                     String commentIdParts[] = nextComment.id().split("-");
                     int commentInitialId = Integer.parseInt(commentIdParts[commentIdParts.length - 1]);
-                    Comment currentComment = new Comment(commentPermalink, commentContent, commentAuthor, commentTimestamp, commentContentHash, commentDepth, commentInitialId);
+                    Comment currentComment = new Comment(commentPermalink, commentContent, commentAuthor, commentTimestamp, commentContentHash, commentDepth, commentInitialId, commentAuthorUrlLink);
                     artToCrawl.comments.add(currentComment);
                 }
                 for (int i = artToCrawl.commentPages - 1; i > 0; i--) {
@@ -103,6 +104,7 @@ public class ArticleThreadedCrawling implements Runnable {
                         String[] userString = nextComment.select("div.user").select("div.author").text().split(" | ");
                         String commentTimestamp = userString[0];
                         String commentAuthor = userString[1];
+                        String commentAuthorUrlLink = nextComment.select("a").attr("href");//Elements alinks = row.select("a");
                         String commentPermalink = nextComment.select("div.user").select("div.meta-comment").select("a").attr("href");
                         String commentContent = nextComment.select("p").html();
                         int commentContentHash = commentContent.hashCode();
@@ -110,7 +112,7 @@ public class ArticleThreadedCrawling implements Runnable {
                         int commentDepth = Integer.parseInt(commentDepthClasses[commentDepthClasses.length - 1]);
                         String commentIdParts[] = nextComment.id().split("-");
                         int commentInitialId = Integer.parseInt(commentIdParts[commentIdParts.length - 1]);
-                        Comment currentComment = new Comment(commentPermalink, commentContent, commentAuthor, commentTimestamp, commentContentHash, commentDepth, commentInitialId);
+                        Comment currentComment = new Comment(commentPermalink, commentContent, commentAuthor, commentTimestamp, commentContentHash, commentDepth, commentInitialId, commentAuthorUrlLink);
                         commentList.add(currentComment);
                     }
                     artToCrawl.comments.addAll(0, commentList);

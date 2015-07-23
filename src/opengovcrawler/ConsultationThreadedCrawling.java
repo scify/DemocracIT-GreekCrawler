@@ -205,7 +205,7 @@ public class ConsultationThreadedCrawling implements Runnable {
                 String commentsUrl = null;
                 if (artLink.select("span.list_comments").select("span").first().text().equals("Σχόλια κλειστά")) {
                     artHasComments = Boolean.FALSE;
-                    numOfComments = -1;
+                    numOfComments = 0;
                     commentsUrl = "-";
                 } else {
                     artHasComments = Boolean.TRUE;
@@ -391,7 +391,7 @@ public class ConsultationThreadedCrawling implements Runnable {
                 String commentsUrl = null;
                 if (artLink.select("span.list_comments").select("span").first().text().equals("Σχόλια κλειστά")) {
                     artHasComments = Boolean.FALSE;
-                    numOfComments = -1;
+                    numOfComments = 0;
                     commentsUrl = "-";
                 } else {
                     artHasComments = Boolean.TRUE;

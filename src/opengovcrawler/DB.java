@@ -418,8 +418,8 @@ public class DB {
     }
 
     /**
-     * Insert comments into DB Also, it inserts username and initialId into
-     * comment_opengov table
+     * Insert comments into DB Also, it inserts username and 
+     * initialId into comment_opengov table
      *
      * @param articleDbId - The id of the article that the comments refer to
      * @param comments - The arrayList of comment
@@ -465,8 +465,9 @@ public class DB {
 //                    prepInsertComStatement.addBatch();
                     ConsultationThreadedCrawling.newComments++;
                     String insertIntoCommentOpengov = "INSERT INTO comment_opengov"
-                            + "(opengovid, fullname, id) " + "VALUES"
-                            + "(" + currentComment.initialId + ",'" + currentComment.author + "'," + insertedCommentKeyId + ")";
+                            + "(opengovid, fullname, id, link_url) " + "VALUES"
+                            + "(" + currentComment.initialId + ",'" + currentComment.author + "'," 
+                            + insertedCommentKeyId + ", '" + currentComment.link_url + "')";
                     stmnt = connection.createStatement();
                     stmnt.executeUpdate(insertIntoCommentOpengov);
                     stmnt.close();
@@ -494,8 +495,9 @@ public class DB {
                 ConsultationThreadedCrawling.newComments++;
                 // Keep track of the opengov users
                 String insertIntoCommentOpengov = "INSERT INTO comment_opengov"
-                        + "(opengovid, fullname, id) " + "VALUES"
-                        + "(" + currentComment.initialId + ",'" + currentComment.author + "'," + insertedCommentKeyId + ")";
+                        + "(opengovid, fullname, id, link_url) " + "VALUES"
+                        + "(" + currentComment.initialId + ",'" + currentComment.author 
+                        + "'," + insertedCommentKeyId + ", '" + currentComment.link_url + "')";
                 stmnt = connection.createStatement();
                 stmnt.executeUpdate(insertIntoCommentOpengov);
                 stmnt.close();
