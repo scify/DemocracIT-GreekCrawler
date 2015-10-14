@@ -18,6 +18,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.json.simple.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -44,10 +45,11 @@ public class CrawlHomeUrls {
     public static int crawlerId;
 
     /**
-     * Checks if all retries for every consultation that failed to be crawled have finished.
+     * Checks if all retries for every consultation that failed to be crawled
+     * have finished.
      *
      * @param retries
-     * @return True if all retries have finished or False if  not
+     * @return True if all retries have finished or False if not
      */
     public boolean allDone(int[] retries) {
         for (int num : retries) {
@@ -59,13 +61,13 @@ public class CrawlHomeUrls {
     }
 
     /**
-     * Gets a map of Ministry names and their corresponding base urls
-     * and starts a threaded crawling of the consultations of each base url.
+     * Gets a map of Ministry names and their corresponding base urls and starts
+     * a threaded crawling of the consultations of each base url.
      *
      * @param ministryBaseUrlMap - Map of ministries and a set of their base urls.
-     * @throws java.lang.InterruptedException 
-     * @throws java.io.IOException 
-     * @throws java.sql.SQLException 
+     * @throws java.lang.InterruptedException
+     * @throws java.io.IOException
+     * @throws java.sql.SQLException
      */
     public void CrawlCollapsedUrls(Map<String, Set<String>> ministryBaseUrlMap) throws InterruptedException, IOException, SQLException {
 
@@ -79,6 +81,7 @@ public class CrawlHomeUrls {
         crawlerId = DB.LogCrawler(lStartTime);
 
         int consFailed = 0;
+        JSONObject obj = new JSONObject();
 
         ArrayList<String> unprocessed = new ArrayList<>();
         for (Object x : ConsUrlsPerOrgInit.keySet()) { //for each organization
@@ -141,22 +144,28 @@ public class CrawlHomeUrls {
         String message = null;
         if (consFailed > 0) {
             status_id = 3;
-            message = consFailed + " unprossed consultations exist.";
+            obj.put("message", "Some errors occured during crawling.");
+            obj.put("details", consFailed + " unprossed consultations exist.");
+//            message = consFailed + " unprossed consultations exist.";
         } else {
             status_id = 2;
-            message = "Crawling completed.";
+            obj.put("message", "Crawling completed.");
+            obj.put("details", "");
+//            message = "Crawling completed.";
         }
-        DB.UpdateLogCrawler(lEndTime, status_id, crawlerId, message);
+        DB.UpdateLogCrawler(lEndTime, status_id, crawlerId, obj);
     }
 
     /**
-     * Gets a map of Ministry names and their corresponding base urls
-     * and clears the base urls, keeping only those that actually contain the consultations.
+     * Gets a map of Ministry names and their corresponding base urls and clears
+     * the base urls, keeping only those that actually contain the
+     * consultations.
      *
      * @param ministryBaseUrlMap - Map of ministries and a set of their base urls.
-     * @return ConsUrlsPerOrg - A Map of (Ministry, Set(ActualConsultationBaseUrl))
-     * @throws java.io.IOException 
-     * @throws java.sql.SQLException 
+     * @return ConsUrlsPerOrg - A Map of (Ministry,
+     * Set(ActualConsultationBaseUrl))
+     * @throws java.io.IOException
+     * @throws java.sql.SQLException
      */
     public Map<String, Set<String>> GetConsLinksPerOrg(Map<String, Set<String>> ministryBaseUrlMap) throws IOException, SQLException {
         Map<String, Set<String>> ConsUrlsPerOrg = new HashMap<>();

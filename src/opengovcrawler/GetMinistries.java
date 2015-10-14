@@ -1,4 +1,3 @@
-
 package opengovcrawler;
 
 import java.io.BufferedReader;
@@ -6,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.TreeMap;
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
@@ -14,7 +14,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 /**
- * Retrieves the Ministry names and their corresponding hyperlink from opengov.gr
+ * Retrieves the Ministry names and their corresponding hyperlink from
+ * opengov.gr
  *
  * @author Christos Sardianos
  * @version 1.0 - 20/02/2015
@@ -27,7 +28,8 @@ public class GetMinistries {
     public static int NUM_OF_ART_THREADS;
 
     /**
-     * Starts the crawling process of OpenGov and crawls the Ministry names and their urls.
+     * Starts the crawling process of OpenGov and crawls the Ministry names and
+     * their urls.
      *
      * @param args The file name of the configuration file (ex. crawler.conf)
      * @throws IOException
@@ -35,8 +37,8 @@ public class GetMinistries {
      * @throws java.sql.SQLException
      */
     public static void main(String[] args) throws IOException, InterruptedException, SQLException {
-args = new String[1];
-        args[0] = "config.properties";
+//        args = new String[1];
+//        args[0] = "config.properties";
         if (args.length > 1) {
             System.out.println();
             System.out.println("**************************************************************************************");
@@ -48,7 +50,7 @@ args = new String[1];
             System.out.println();
             System.exit(1);
         }
-        
+
         if (args.length == 0) {
             System.out.println();
             System.out.println("*********************************************************************************");
@@ -107,11 +109,19 @@ args = new String[1];
             System.out.println("Crawling STARTED!");
             Document doc = Jsoup.connect("http://www.opengov.gr/home").timeout(CrawlHomeUrls.DEFAULT_TIMEOUT).userAgent("Mozilla").get();
             String title = doc.title();
-            Elements ministriesAhrefs = doc.select("div.downspace_item_content.side_list").select("li").select("a");
-            for (Element link : ministriesAhrefs) {
-                ministries.put(link.text(), link.attr("href"));
-                DB.InsertOrganization(link.text(),link.attr("href"));
+            Elements ministryCategories = doc.select("div.ministeries.downspace_item");
+            Elements ministriesAhrefs = null;
+            HashSet ogReadMins = new HashSet();
+            for (Element minCategory : ministryCategories) {
+                String minGroup = minCategory.select("div.downspace_item_title").text();
+                ministriesAhrefs = minCategory.select("div.downspace_item_content.side_list").select("li").select("a");
+                for (Element link : ministriesAhrefs) {
+                    ministries.put(link.text(), link.attr("href"));
+                    DB.InsertOrganization(link.text(), link.attr("href"), minGroup);
+                    ogReadMins.add(link.text());
+                }
             }
+            DB.UpdateGroupOfRemovedMinitries(ogReadMins);
             GetConsultationsList consultationList = new GetConsultationsList();
             consultationList.GetConsultationList(ministries);
         } catch (HttpStatusException ht) {

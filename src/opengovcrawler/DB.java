@@ -20,9 +20,13 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Locale;
 import static opengovcrawler.GetMinistries.configFile;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.json.simple.JSONObject;
 
 /**
  * Performs all the database transactions.
@@ -141,12 +145,16 @@ public class DB {
      * @param url - The url of the ministry
      * @throws java.sql.SQLException
      */
-    public static void InsertOrganization(Object ministry, String url) throws SQLException {
+    public static void InsertOrganization(Object ministry, String url, String minGroup) throws SQLException {
         Statement stmt = connection.createStatement();
-        ResultSet rs = stmt.executeQuery("SELECT ID FROM ORGANIZATION_LKP WHERE title = '" + ministry + "';");
+        ResultSet rs = stmt.executeQuery("SELECT ID, GROUP_TITLE FROM ORGANIZATION_LKP WHERE title = '" + ministry + "';");
         int id = -1;
         if (rs.next()) {
             id = rs.getInt(1);
+            String group_title = rs.getString(2);
+            if (group_title == null || !group_title.equals(minGroup)) {
+                stmt.executeUpdate("UPDATE ORGANIZATION_LKP SET group_title = '" + minGroup + "' WHERE id = " + id + ";");
+            }
         } else {
             stmt.execute("INSERT INTO ORGANIZATION_LKP (title, url_initial) VALUES ('" + ministry + "','" + url + "');");
         }
@@ -418,8 +426,8 @@ public class DB {
     }
 
     /**
-     * Insert comments into DB Also, it inserts username and 
-     * initialId into comment_opengov table
+     * Insert comments into DB Also, it inserts username and initialId into
+     * comment_opengov table
      *
      * @param articleDbId - The id of the article that the comments refer to
      * @param comments - The arrayList of comment
@@ -466,7 +474,7 @@ public class DB {
                     ConsultationThreadedCrawling.newComments++;
                     String insertIntoCommentOpengov = "INSERT INTO comment_opengov"
                             + "(opengovid, fullname, id, link_url) " + "VALUES"
-                            + "(" + currentComment.initialId + ",'" + currentComment.author + "'," 
+                            + "(" + currentComment.initialId + ",'" + currentComment.author + "',"
                             + insertedCommentKeyId + ", '" + currentComment.link_url + "')";
                     stmnt = connection.createStatement();
                     stmnt.executeUpdate(insertIntoCommentOpengov);
@@ -496,7 +504,7 @@ public class DB {
                 // Keep track of the opengov users
                 String insertIntoCommentOpengov = "INSERT INTO comment_opengov"
                         + "(opengovid, fullname, id, link_url) " + "VALUES"
-                        + "(" + currentComment.initialId + ",'" + currentComment.author 
+                        + "(" + currentComment.initialId + ",'" + currentComment.author
                         + "'," + insertedCommentKeyId + ", '" + currentComment.link_url + "')";
                 stmnt = connection.createStatement();
                 stmnt.executeUpdate(insertIntoCommentOpengov);
@@ -646,14 +654,14 @@ public class DB {
      * @param message
      * @throws java.sql.SQLException
      */
-    public static void UpdateLogCrawler(long endTime, int status_id, int crawlerId, String message) throws SQLException {
+    public static void UpdateLogCrawler(long endTime, int status_id, int crawlerId, JSONObject obj) throws SQLException {
         String updateCrawlerStatusSql = "UPDATE log.activities SET "
                 + "end_date = ?, status_id = ?, message = ?"
                 + "WHERE id = ?";
         PreparedStatement prepUpdStatusSt = connection.prepareStatement(updateCrawlerStatusSql);
         prepUpdStatusSt.setTimestamp(1, new java.sql.Timestamp(endTime));
         prepUpdStatusSt.setInt(2, status_id);
-        prepUpdStatusSt.setString(3, message);
+        prepUpdStatusSt.setString(3, obj.toJSONString());
         prepUpdStatusSt.setInt(4, crawlerId);
         prepUpdStatusSt.executeUpdate();
         prepUpdStatusSt.close();
@@ -676,5 +684,33 @@ public class DB {
             exists = true;
         }
         return exists;
+    }
+
+    static boolean UpdateGroupOfRemovedMinitries(HashSet ogReadMins) throws SQLException {
+        Statement stmt = connection.createStatement();
+        ResultSet rs = stmt.executeQuery("SELECT title FROM ORGANIZATION_LKP;");
+        HashSet dbMinTitles = new HashSet();
+//        int id = -1;
+        while (rs.next()) {
+            dbMinTitles.add(rs.getString(1));
+//            String group_title = rs.getString(2);
+//            if (group_title== null || !group_title.equals(minGroup)){
+//                stmt.executeUpdate("UPDATE ORGANIZATION_LKP SET group_title = '" + minGroup + "' WHERE id = " + id + ";");
+//            }
+        }
+        if (dbMinTitles.size() != ogReadMins.size()) {
+            ArrayList<String> deprecatedMins = new ArrayList<String>(CollectionUtils.subtract(dbMinTitles, ogReadMins));
+            String updMinGroup = "UPDATE ORGANIZATION_LKP SET "
+                    + "group_title = ?"
+                    + "WHERE title = ?";
+            PreparedStatement prepUpdUrlsSt = connection.prepareStatement(updMinGroup);
+            for (String minName : deprecatedMins) {
+                prepUpdUrlsSt.setString(1, "Deprecated");
+                prepUpdUrlsSt.setString(2, minName);
+                prepUpdUrlsSt.executeUpdate();
+            }
+            prepUpdUrlsSt.close();
+        }
+        return false;
     }
 }
