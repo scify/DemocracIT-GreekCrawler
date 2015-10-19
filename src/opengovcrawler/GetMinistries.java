@@ -37,8 +37,8 @@ public class GetMinistries {
      * @throws java.sql.SQLException
      */
     public static void main(String[] args) throws IOException, InterruptedException, SQLException {
-//        args = new String[1];
-//        args[0] = "config.properties";
+        args = new String[1];
+        args[0] = "config.properties";
         if (args.length > 1) {
             System.out.println();
             System.out.println("**************************************************************************************");

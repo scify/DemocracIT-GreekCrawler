@@ -216,7 +216,7 @@ public class ConsultationThreadedCrawling implements Runnable {
                     } else {
                         numOfComments = Integer.parseInt(split[0]);
                     }
-                    commentPages = commentPages / 50 + 1;
+                    commentPages = numOfComments / 50 + 1;
                 }
                 curArticle = new Article(artUrl, artTitle, artHasComments, numOfComments, commentsUrl, commentPages, order);
                 articlesList.add(curArticle);
@@ -310,7 +310,7 @@ public class ConsultationThreadedCrawling implements Runnable {
     }
 
     /**
-     * Performs partial consultation crawling in case the consultations is already
+     * Performs partial consultation crawling in case the consultation is already
      * in the DB but its status was "Closed", so no need for crawling its articles and their comments again.
      *
      * @param dbStatus - The current status of the consultation in the DB
@@ -402,7 +402,7 @@ public class ConsultationThreadedCrawling implements Runnable {
                     } else {
                         numOfComments = Integer.parseInt(split[0]);
                     }
-                    commentPages = commentPages / 50 + 1;
+                    commentPages = numOfComments / 50 + 1;
                 }
                 curArticle = new Article(artUrl, artTitle, artHasComments, numOfComments, commentsUrl, commentPages, order);
                 articlesList.add(curArticle);

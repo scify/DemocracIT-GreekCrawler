@@ -60,6 +60,18 @@ public class ArticleThreadedCrawling implements Runnable {
         this.artPos = artPos;
         this.consID = consID;
     }
+    
+    
+//    public static void main(String[] args) throws SQLException, IOException {
+//        args = new String[1];
+//        args[0] = "config.properties";
+//        GetMinistries.configFile = args[0];
+//        DB.init();
+//        ArrayList<Article> all = new ArrayList<>();
+//        Article a = new Article("http://www.opengov.gr/minfin/?p=6166", "Άρθρο 02", Boolean.TRUE, 68, "http://www.opengov.gr/minfin/?p=6166" , 2, 2);
+//        ArticleThreadedCrawling x = new ArticleThreadedCrawling(a, all, 3959);
+//        x.run();
+//    }
 
     @Override
     public void run() {
@@ -82,8 +94,8 @@ public class ArticleThreadedCrawling implements Runnable {
                 Elements commentsList = artPage.select("div#content").select("div#comments").select("ul.comment_list").select("li");
                 for (Element nextComment : commentsList) {
                     String[] userString = nextComment.select("div.user").select("div.author").text().split("\\|");
-                    String commentTimestamp = userString[0];
-                    String commentAuthor = userString[1];
+                    String commentTimestamp = userString[0].trim();
+                    String commentAuthor = userString[1].trim();
                     String commentAuthorUrlLink = nextComment.select("a").attr("href");//Elements alinks = row.select("a");
                     String commentPermalink = nextComment.select("div.user").select("div.meta-comment").select("a").attr("href");
                     String commentContent = nextComment.select("p").html();
@@ -101,9 +113,9 @@ public class ArticleThreadedCrawling implements Runnable {
                     commentsList = artPage.select("div#content").select("div#comments").select("ul.comment_list").select("li");
                     ArrayList<Comment> commentList = new ArrayList<>();
                     for (Element nextComment : commentsList) {
-                        String[] userString = nextComment.select("div.user").select("div.author").text().split(" | ");
-                        String commentTimestamp = userString[0];
-                        String commentAuthor = userString[1];
+                        String[] userString = nextComment.select("div.user").select("div.author").text().split("\\|");
+                        String commentTimestamp = userString[0].trim();
+                        String commentAuthor = userString[1].trim();
                         String commentAuthorUrlLink = nextComment.select("a").attr("href");//Elements alinks = row.select("a");
                         String commentPermalink = nextComment.select("div.user").select("div.meta-comment").select("a").attr("href");
                         String commentContent = nextComment.select("p").html();
